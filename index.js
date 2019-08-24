@@ -77,6 +77,7 @@ async function getData (cnpj) {
   //   }
   // }
   let numbers = cnpj.replace( /\D/g, '')
+  if (numbers.toString().length < 13) return false
   return await axios.get(API + numbers)
   .then(function (response) {
     return response.data
@@ -118,7 +119,12 @@ async function processData() {
      
       let row = workSheetsFromFile[0].data[index]
       console.log(`Processando[${row[0]}][${row[1]}]: Iniciando Busca ${index} / ${total}`)
-      let item = await parseData(row,await getData(row[1]))
+      let data = await getData(row[1])
+      if(!data){
+        console.log(`Processando[${row[0]}][${row[1]}]: CNPJ INVALIDO`) 
+        continue
+      }
+      let item = await parseData(row,data)
       console.log(`Processando[${row[0]}][${row[1]}]: Dados Processados`)
       console.log(JSON.stringify(item,null,2))
       converter.json2csv([item], (err, csv) => {
